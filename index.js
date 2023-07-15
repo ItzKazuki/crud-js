@@ -1,6 +1,6 @@
 import * as readline from "node:readline/promises";
 import appConfig from './app/config/app.config.js';
-import { dataCookieLogin } from "./app/config/cookie.config.js";
+import { getUser, removeUser } from "./app/lib/cookie.js";
 import { stdin as input, stdout as output } from "node:process";
 import {
     register,
@@ -8,7 +8,6 @@ import {
     myAccount,
     updateAccount,
     removeMyAccount,
-    logout,
     greetings
 } from "./app/user.js";
 import {
@@ -20,6 +19,7 @@ import {
 } from "./app/admin.js";
 import { failed, info, pending, ncInfo } from "./app/lib/color.js";
 import { addMenu, deleteMenu, editMenu, listMenu } from "./app/menu.js";
+import { sleep } from "./app/lib/package.js";
 
 //import function
 const rl = readline.createInterface({ input, output });
@@ -32,7 +32,7 @@ async function main() {
     console.log("2. login page");
     console.log("3. list menu");
     console.log("4. list staff");
-    if (dataCookieLogin.is_admin) {
+    if (getUser().is_admin) {
         console.log("5. admin page");
     } else {
         console.log("5. my account");
@@ -44,10 +44,20 @@ async function main() {
 
     switch (command) {
         case "1":
-            register();
+            if (getUser().id) {
+                info('you already login, please try again later...')
+                main();
+            } else {
+                register();
+            }
             break;
         case "2":
-            login();
+            if (getUser().id) {
+                info('you already login, please try again later...')
+                main();
+            } else {
+                login();
+            }
             break;
         case "3":
             listMenu();
@@ -56,14 +66,17 @@ async function main() {
             showListStaff();
             break;
         case "5":
-            if (dataCookieLogin.is_admin) {
+            if (getUser().is_admin) {
                 admin();
             } else {
                 myAccount();
             }
             break;
         case "6":
-            logout()
+            info('stopping process...');
+            sleep(5000)
+            pending('bye :)');
+            removeUser();
             process.exit();
         default:
             info("\nMasukan command yang benar");
@@ -73,11 +86,10 @@ async function main() {
 }
 
 async function user() {
-    
     console.log("\n ----------------- My Account----------------------");
     console.log("1. update akun");
     console.log("2. remove my account");
-    if (dataCookieLogin.is_admin) {
+    if (getUser().is_admin) {
         console.log("3. admin page");
     } else {
         console.log("3. main page");
@@ -95,14 +107,14 @@ async function user() {
             removeMyAccount();
             break;
         case '3':
-            if (dataCookieLogin.is_admin) {
+            if (getUser().is_admin) {
                 admin();
             } else {
                 main();
             }
             break;
         case '4':
-            logout();
+            removeUser();
             main();
             break;
         default:
@@ -113,8 +125,8 @@ async function user() {
 }
 
 async function admin() {
-    if (dataCookieLogin.username == undefined || !dataCookieLogin.is_admin) return main();
-    greetings(dataCookieLogin);
+    if (getUser().username == undefined || !getUser().is_admin) return main();
+    greetings();
 
     console.log("\n ----------------- List Command Admin ----------------------");
     console.log("1. tambah menu");

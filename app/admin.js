@@ -2,10 +2,10 @@ import Users from "./model/users.model.js";
 import { admin, main, rl } from '../index.js';
 import appConfig from './config/app.config.js';
 import { success, error, failed } from "./lib/color.js";
-import { dataCookieLogin } from "./config/cookie.config.js";
+import { getUser } from "./lib/cookie.js";
 
 function checkIsAdministrator() {
-    if(dataCookieLogin.id != appConfig.administrator) {
+    if(getUser().id != appConfig.administrator) {
         error('kamu bukan administrator, mengalihkan ke admin page');
         admin();
         return true;
@@ -48,7 +48,7 @@ async function cleanupClient() {
     
         const validate = await Users.validatePassword(
             retype_pwd,
-            dataCookieLogin.password
+            getUser().password
         );
     
         if (!validate) {

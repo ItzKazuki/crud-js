@@ -2,7 +2,7 @@ import captcha from './lib/captcha.js';
 import Menu from "./model/menu.model.js";
 import { main, admin, user, rl } from '../index.js';
 import { success, error, info, failed } from "./lib/color.js";
-import { cookieLogin, dataCookieLogin } from "./config/cookie.config.js";
+import { getUser } from "./lib/cookie.js";
 
 async function addMenu() {
     console.log('\n------------ Menu ---------------');
@@ -21,7 +21,7 @@ async function addMenu() {
         name: name,
         description: description,
         price: parseInt(price),
-        username: dataCookieLogin.username
+        username: getUser().username
     });
 
     Menu.create(menu, (err, res) => {
@@ -104,7 +104,7 @@ function editMenu() {
             name: name,
             description: description,
             price: parseInt(price),
-            username: dataCookieLogin.username
+            username: getUser().username
         }
 
         Menu.updateById(idMenu, menu, (err, res) => {

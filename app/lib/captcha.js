@@ -1,4 +1,4 @@
-import { main, admin, user, rl } from '../../index.js';
+import { main, admin, rl } from '../../index.js';
 
 let hasTry = 0;
 

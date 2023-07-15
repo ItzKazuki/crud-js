@@ -1,7 +1,7 @@
 export default {
     administrator: '649d7264284af1c11bd31c0b', // id
-    build: 'production',
-    version: '1.2.0',
+    build: 'devlopment',
+    version: '1.2.1',
     author: 'kazuki',
     debug: true,
 };

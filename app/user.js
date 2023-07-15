@@ -2,30 +2,28 @@ import captcha from './lib/captcha.js';
 import Users from "./model/users.model.js";
 import { main, admin, user, rl } from '../index.js';
 import { success, error, failed, danger } from "./lib/color.js";
-import { cookieLogin, dataCookieLogin } from "./config/cookie.config.js";
-import { getUser } from './lib/cookie.js';
+import { Cookie, getUser, removeUser } from "./lib/cookie.js";
 
 // ----------------------- Account --------------------------------- \\
 
 function greetings() {
-    if(!getUser.is_admin) {
+    if(!getUser().is_admin) {
         if (
-            getUser.username == undefined &&
-            getUser.password == undefined
+            getUser().username == undefined &&
+            getUser().password == undefined
         ) return;
-        success(`\nWelcome ${getUser.username}`);
-        return;
+        return success(`\nWelcome ${getUser().username}`);
     }
 
     if (
-        getUser.username == undefined &&
-        getUser.password == undefined
+        getUser().username == undefined &&
+        getUser().password == undefined
     ) {
         danger("kamu belum login, sliahkan login terlebih dahulu");
-        main();
-        return;
+        return main();
     }
-    success(`\nWelcome to admin ${getUser.username}`);
+
+    return success(`\nWelcome to admin ${getUser().username}`);
 }
 
 async function register() {
@@ -60,9 +58,9 @@ async function register() {
 
 async function login() {
     console.log("Welcome to login page\n");
-    if (dataCookieLogin.is_admin == true) {
+    if (getUser().is_admin == true) {
         console.log(
-            `success login with username ${dataCookieLogin.username}, redirecting to admin command`
+            `success login with username ${getUser().username}, redirecting to admin command`
         );
         return admin();
     }
@@ -94,14 +92,21 @@ async function login() {
             return main();
         }
 
+        // cookieLogin(res.id, res.username, res.password, res.is_admin);
+        // set user to cookie
+        new Cookie({
+            id: res.id,
+            username: res.username,
+            password: res.password,
+            is_admin: res.is_admin
+        });
+
         // check admin atau bukan
         if (!res.is_admin) {
-            cookieLogin(res.id, res.username, res.password, res.is_admin);
             success(`success login with username ${res.username}`);
             return main();
         }
 
-        cookieLogin(res.id, res.username, res.password, res.is_admin);
         success(
             `success login with username ${res.username}, redirecting to admin command`
         );
@@ -125,9 +130,9 @@ async function updateAccount() {
             return main();
         }
 
-        if(username == '') username += dataCookieLogin.username;
+        if(username == '') username += getUser().username;
 
-        Users.updateById(dataCookieLogin.id, { username: username, password: password }, (err, res) => {
+        Users.updateById(getUser().id, { username: username, password: password }, (err, res) => {
             if(err) {
                 failed(err);
                 return user();
@@ -159,21 +164,21 @@ async function removeMyAccount () {
             return main();
         }
 
-        const validate = await Users.validatePassword(password, dataCookieLogin.password);
+        const validate = await Users.validatePassword(password, getUser().password);
 
         if(!validate) {
             error('password salah, silahkan coba lagi');
             return user();
         }
 
-        Users.remove(dataCookieLogin.id, (err, res) => {
+        Users.remove(getUser().id, (err, res) => {
             if (err) {
                 failed(err);
                 return user();
             }
 
             success('berhasil menghapus akun anda, terimaksih telah menggunakan layanan kami!');
-            logout();
+            removeUser();
             return main();
 
         })
@@ -184,23 +189,14 @@ async function removeMyAccount () {
 }
 
 function myAccount() {
-    if (!dataCookieLogin.username) {
+    if (!getUser().username) {
         error("kamu belum login, login terlebih dahulu");
         return login();
     }
     
-    console.table([dataCookieLogin], ['id', 'username', 'is_admin']);
+    console.table([getUser()], ['id', 'username', 'is_admin']);
     return user();
-}
-
-async function logout() {
-    delete dataCookieLogin.id;
-    delete dataCookieLogin.username;
-    delete dataCookieLogin.password;
-    delete dataCookieLogin.is_admin;
-    danger('logging out....');
-    return true;
 }
 // ----------------------- End Account --------------------------------- \\
 
-export { updateAccount, removeMyAccount, register, login, myAccount, logout, greetings };
+export { updateAccount, removeMyAccount, register, login, myAccount, greetings };
