@@ -1,6 +1,6 @@
 export default {
-    HOST: 'cluster0.hjwvh.mongodb.net',
-    USERNAME: 'kazuki',
-    PASSWORD: 'kazukikun24',
+    HOST: '',
+    USERNAME: 'root',
+    PASSWORD: '',
     DATABASE: 'learn_njs'
 };
